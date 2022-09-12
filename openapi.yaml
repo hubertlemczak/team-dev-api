@@ -42,7 +42,6 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/User'
- 
   /login:
     post:
       tags:
@@ -65,7 +64,8 @@ paths:
       
       responses:
         '200':
-          description: successful operation
+          description: OK
+          
           headers:
             X-Rate-Limit:
               description: calls per hour allowed by the user
@@ -80,32 +80,24 @@ paths:
           content:
             application/xml:
               schema:
-                type: string
+               $ref: '#/components/schemas/loginRes'
+                
             application/json:
               schema:
-                type: string
+               $ref: '#/components/schemas/loginRes'
+                
         '400':
           description: Invalid username/password supplied
-  /user/logout:
+  
+  /user/{id}:
     get:
       tags:
         - user
-      summary: Logs out current logged in user session
+      summary: Get user by user id
       description: ''
-      operationId: logoutUser
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  /user/{username}:
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
+      operationId: getUserByID
       parameters:
-        - name: username
+        - name: id
           in: path
           description: 'The name that needs to be fetched. Use user1 for testing. '
           required: true
@@ -125,52 +117,76 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
-    put:
+    patch:
       tags:
         - user
-      summary: Update user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
+      summary: updates cohort
+      description: Creates list of users with given input array
+      operationId: asd
       parameters:
-        - name: username
+        - name: id
           in: path
-          description: name that need to be deleted
+          description: 'The name that needs to be fetched. Use user1 for testing. '
           required: true
           schema:
             type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CohortAddUser'          
+        '401':
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /log:
+    post:
+      tags:
+       - log
+      summary: Create log
+      description: This can only be done by authorized user.
+      operationId: createLog
       requestBody:
-        description: Update an existent user in the store
+        description: Created log boject
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        default:
-          description: successful operation
-    delete:
-      tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
+         application/json:
           schema:
-            type: string
+           type: object
+           properties:
+            date: 
+             type: string
+            cohort_id:
+             type: integer
+            lines:
+             properties:
+              content:
+               type: string
       responses:
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+        '401':
+          description: Unauthorized
+          content:
+           application/json:
+             schema:
+              type: object
+              properties:
+                  status: 
+                   type: string
+                   example: fail
+                  data:
+                   properties:
+                    authentication:
+                      type: string
+                      example: Invalid or missing access token           
   /post:
     post:
       tags:
@@ -234,51 +250,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cohort'
         400:
-          description: fail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    patch:
-      tags:
-        - cohort
-      summary: updates cohort
-      description: Creates list of users with given input array
-      operationId: asd
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CohortAddUser'          
-        '401':
-          description: fail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /log:
-    post:
-      tags:
-        - log
-      summary: Create Log
-      description: This can only be done by the logged in user with role TEACHER.
-      operationId: createLog
-      responses:
-        201:
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Log'
-        400:
-          description: fail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
           description: fail
           content:
             application/json:
@@ -387,32 +358,33 @@ components:
               type: string
               example: success
             data:
-              properties:
-                user:
-                  properties:
-                    id:
-                      type: integer
-                    cohort_id:
-                      type: integer
-                    role:
-                      type: string 
-                      example: Student
-                    first_name:
-                      type: string
-                      example: Nathan
-                    last_name:
-                      type: string
-                      example: James
-                    email:
-                      type: string
-                    password:
-                      type: string
-                    biography:
-                      type: string
-                      example: Hello World
-                    github_url:
-                      type: string
-                      example: https://github.com/vherus
+             properties:
+              user:
+               properties:
+                 id:
+                  type: integer
+                 cohort_id:
+                  type: integer
+                 role:
+                  type: string 
+                  example: Student
+                 first_name:
+                  type: string
+                  example: Nathan
+                 last_name:
+                  type: string
+                  example: James
+                 email:
+                  type: string
+                  example: ngk5@gmail.com
+                 password:
+                  type: string
+                 biography:
+                  type: string
+                  example: Hello World
+                 github_url:
+                  type: string
+                  example: https://github.com/vherus
     login:
       type: object 
       properties:
@@ -420,6 +392,45 @@ components:
           type: string 
         password:
           type: string
+     
+    loginRes:
+      type: object 
+      properties:
+        status: 
+          type: string
+          example: success
+        data:
+         properties:
+          token:
+           type: string
+        user:
+         properties:
+            id: 
+             type: integer
+             example: 1
+            cohort_id: 
+             type: integer 
+            role:
+             type: string 
+             example: Student
+            first_name:
+             type: string
+             example: Nathan
+            last_name:
+              type: string
+              example: James
+            email:
+              type: string
+              example: ngk5@gmail.com
+            password:
+              type: string
+            biography:
+              type: string
+              example: Hello World
+            github_url:
+              type: string
+              example: https://github.com/vherus
+
     Error:
       type: object
       properties:
@@ -429,6 +440,7 @@ components:
           properties:
             error:
               type: string
+              
     Log:
       type: object
       properties:
