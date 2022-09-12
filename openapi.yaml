@@ -10,6 +10,7 @@ tags:
   - name: user
   - name: post
   - name: cohort
+  - name: log
 paths:
   /user:
     post:
@@ -41,34 +42,6 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/User'
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: query
-          description: 'The name that needs to be fetched. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
- 
   /login:
     post:
       tags:
@@ -144,8 +117,6 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
-    
-          
     patch:
       tags:
         - user
@@ -172,7 +143,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
   /log:
     post:
       tags:
@@ -196,9 +166,12 @@ paths:
               content:
                type: string
       responses:
-        '200':
-          description: Successful operation
-        
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
         '401':
           description: Unauthorized
           content:
@@ -213,11 +186,7 @@ paths:
                    properties:
                     authentication:
                       type: string
-                      example: Invalid or missing access token
-               
-            
-             
-                
+                      example: Invalid or missing access token           
   /post:
     post:
       tags:
@@ -286,7 +255,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-   
 components:
   schemas:
     Post:
@@ -424,7 +392,7 @@ components:
           type: string 
         password:
           type: string
-          
+     
     loginRes:
       type: object 
       properties:
@@ -462,10 +430,7 @@ components:
             github_url:
               type: string
               example: https://github.com/vherus
-  
-        
-        
-          
+
     Error:
       type: object
       properties:
@@ -474,7 +439,41 @@ components:
         data:
           properties:
             error:
-              type: string            
+              type: string
+              
+    Log:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          properties:
+            log:
+              properties:
+                id:
+                  type: integer
+                cohort_id:
+                  type: integer
+                date:
+                  type: string
+                author:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      content:
+                        type: string
   requestBodies:
     UserArray:
       description: List of user object
