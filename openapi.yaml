@@ -10,13 +10,14 @@ tags:
   - name: user
   - name: post
   - name: cohort
+  - name: log
 paths:
   /user:
     post:
       tags:
         - user
       summary: Create user
-      description: This can only be done by the logged in user.
+      description: Create new user
       operationId: createUser
       requestBody:
         description: Created user object
@@ -31,61 +32,37 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       responses:
-        default:
-          description: successful operation
+       '201':
+        
+          description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/CreatedUser'
             application/xml:
               schema:
                 $ref: '#/components/schemas/User'
-  /user/createWithList:
+ 
+  /login:
     post:
       tags:
         - user
-      summary: Creates list of users with given input array
-      description: Creates list of users with given input array
-      operationId: createUsersWithListInput
+      summary: Localhost Login
+      description: ''
+      operationId: loginUser
       requestBody:
+        description: User login information 
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        default:
-          description: successful operation
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
+              $ref: '#/components/schemas/login'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/login'
+      
       responses:
         '200':
           description: successful operation
@@ -281,8 +258,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /log:
+    post:
+      tags:
+        - log
+      summary: Create Log
+      description: This can only be done by the logged in user with role TEACHER.
+      operationId: createLog
+      responses:
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+        400:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Post:
+      type: object
+      properties:
+        post:
+          properties:
+            id:
+              type: integer
+              format: int64
+            content:
+              type: string
     User:
       type: object
       properties:
@@ -290,39 +303,23 @@ components:
           type: string
         data:
           properties:
-            id:
-              type: integer
-              format: int64
-            username:
+            first_name:
               type: string
-            firstName:
+              example: Nathan
+            last_name:
               type: string
-            lastName:
-              type: string
+              example: James
             email:
               type: string
+              example: ngk5@gmail.com
             password:
               type: string
-            phone:
+            biography:
               type: string
-            userStatus:
-              type: integer
-              description: User Status
-              format: int32
-    Post:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          properties:
-            post:
-              properties:
-                id:
-                  type: integer
-                  format: int64
-                content:
-                  type: string
+              example: Hello World
+            github_url:
+              type: string
+              example: https://github.com/vherus
     Posts:
       type: object
       properties:
@@ -383,6 +380,46 @@ components:
                 cohort_id:
                   type: integer
                   format: int64
+    CreatedUser:
+          type: object 
+          properties: 
+            status:
+              type: string
+              example: success
+            data:
+              properties:
+                user:
+                  properties:
+                    id:
+                      type: integer
+                    cohort_id:
+                      type: integer
+                    role:
+                      type: string 
+                      example: Student
+                    first_name:
+                      type: string
+                      example: Nathan
+                    last_name:
+                      type: string
+                      example: James
+                    email:
+                      type: string
+                    password:
+                      type: string
+                    biography:
+                      type: string
+                      example: Hello World
+                    github_url:
+                      type: string
+                      example: https://github.com/vherus
+    login:
+      type: object 
+      properties:
+        email:
+          type: string 
+        password:
+          type: string
     Error:
       type: object
       properties:
@@ -392,6 +429,39 @@ components:
           properties:
             error:
               type: string
+    Log:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          properties:
+            log:
+              properties:
+                id:
+                  type: integer
+                cohort_id:
+                  type: integer
+                date:
+                  type: string
+                author:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      content:
+                        type: string
   requestBodies:
     UserArray:
       description: List of user object
