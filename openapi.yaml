@@ -8,7 +8,8 @@ servers:
   - url: team-dev-api
 tags:
   - name: user
-    description: Operations about user
+  - name: post
+  - name: cohort
 paths:
   /user:
     post:
@@ -193,41 +194,204 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
+  /post:
+    post:
+      tags:
+        - post
+      summary: Create post
+      description: This can only be done by the logged in user.
+      operationId: createPost
+      requestBody:
+        description: Created post object
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        400:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - post
+      summary: gets all posts
+      description: get all posts
+      operationId: getPosts
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Posts'          
+        '401':
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /cohort:
+    post:
+      tags:
+        - cohort
+      summary: Create cohort
+      description: This can only be done by the logged in user with role TEACHER.
+      operationId: createCohort
+      responses:
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cohort'
+        400:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - cohort
+      summary: updates cohort
+      description: Creates list of users with given input array
+      operationId: asd
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CohortAddUser'          
+        '401':
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
-
     User:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
+        status:
           type: string
-          example: theUser
-        firstName:
+        data:
+          properties:
+            id:
+              type: integer
+              format: int64
+            username:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+            phone:
+              type: string
+            userStatus:
+              type: integer
+              description: User Status
+              format: int32
+    Post:
+      type: object
+      properties:
+        status:
           type: string
-          example: John
-        lastName:
+        data:
+          properties:
+            post:
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                content:
+                  type: string
+    Posts:
+      type: object
+      properties:
+        status:
           type: string
-          example: James
-        email:
+        data:
+          properties:
+            posts:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  content:
+                    type: string
+                  author:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      cohortId:
+                        type: integer
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                      email:
+                        type: string
+                      bio:
+                        type: string
+                      githubUrl:
+                        type: string
+                      role:
+                        type: string
+    Cohort:
+      type: object
+      properties:
+        status:
           type: string
-          example: john@email.com
-        password:
+        data:
+          properties:
+            cohort:
+              properties:
+                id:
+                  type: integer
+                  format: int64
+    CohortAddUser:
+      type: object
+      properties:
+        status:
           type: string
-          example: '12345'
-        phone:
+        data:
+          properties:
+            user:
+              properties:
+                cohort_id:
+                  type: integer
+                  format: int64
+    Error:
+      type: object
+      properties:
+        status:
           type: string
-          example: '12345'
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
-          example: 1
-      xml:
-        name: user
+        data:
+          properties:
+            error:
+              type: string
   requestBodies:
     UserArray:
       description: List of user object
