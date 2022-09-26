@@ -5,12 +5,11 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:4000
+  - url: team-dev-api
 tags:
   - name: user
   - name: post
   - name: cohort
-  - name: log
 paths:
   /user:
     post:
@@ -20,9 +19,15 @@ paths:
       description: Create new user
       operationId: createUser
       requestBody:
-        description: User registration details
+        description: Created user object
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/User'
       responses:
@@ -33,18 +38,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatedUser'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
     get:
       tags:
         - user
-      summary: Get all users by first name if provided
+      summary: Get user by user name
       description: ''
-      operationId: getAllUsers
-      security:
-        - bearerAuth: []
+      operationId: getUserByName
       parameters:
-        - name: first_name
+        - name: username
           in: query
-          description: Search all users by first name if provided
+          description: 'The name that needs to be fetched. '
+          required: true
           schema:
             type: string
       responses:
@@ -53,19 +60,15 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Invalid username supplied
         '404':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: User not found
+ 
   /login:
     post:
       tags:
@@ -79,10 +82,33 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/login'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/login'
+      
       responses:
         '200':
           description: OK
+          
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
           content:
+            application/xml:
+              schema:
+               $ref: '#/components/schemas/loginRes'
+                
             application/json:
               schema:
                $ref: '#/components/schemas/loginRes'
@@ -97,8 +123,6 @@ paths:
       summary: Get user by user id
       description: ''
       operationId: getUserByID
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -112,27 +136,22 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Invalid username supplied
         '404':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: User not found
+    
+          
     patch:
       tags:
         - user
       summary: updates cohort
       description: Creates list of users with given input array
       operationId: asd
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -140,17 +159,8 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        description: Cohort Id to add user to
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                cohort_id:
-                  type: integer
       responses:
-        '201':
+        '200':
           description: Successful operation
           content:
             application/json:
@@ -162,6 +172,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  
   /log:
     post:
       tags:
@@ -169,39 +180,44 @@ paths:
       summary: Create log
       description: This can only be done by authorized user.
       operationId: createLog
-      security:
-        - bearerAuth: []
       requestBody:
-        description: Created log object
+        description: Created log boject
         content:
          application/json:
           schema:
-            type: object
-            properties:
-              date: 
-                type: string
-              cohort_id:
-                type: integer
-              lines:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      content:
-                        type: string
+           type: object
+           properties:
+            date: 
+             type: string
+            cohort_id:
+             type: integer
+            lines:
+             properties:
+              content:
+               type: string
       responses:
-        201:
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Log'
+        '200':
+          description: Successful operation
+        
         '401':
           description: Unauthorized
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error' 
+           application/json:
+             schema:
+              type: object
+              properties:
+                  status: 
+                   type: string
+                   example: fail
+                  data:
+                   properties:
+                    authentication:
+                      type: string
+                      example: Invalid or missing access token
+               
+            
+             
+                
   /post:
     post:
       tags:
@@ -209,8 +225,6 @@ paths:
       summary: Create post
       description: This can only be done by the logged in user.
       operationId: createPost
-      security:
-        - bearerAuth: []
       requestBody:
         description: Created post object
         content:
@@ -239,9 +253,11 @@ paths:
       summary: gets all posts
       description: get all posts
       operationId: getPosts
+
       security:
         - bearerAuth: []
       responses: 
+
         '200':
           description: Successful operation
           content:
@@ -254,6 +270,125 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+               
+                
+  /post/{id}:  
+    patch:
+      tags:
+       - post
+      summary: edit a post 
+      description: edit post by id
+      operationId: editPost
+      responses:
+       '201':
+         description: successful
+       '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+       '400':
+         description: bad request
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+       '500':
+          description: error
+          content:
+            application/json:
+              schema:
+               type: object
+               properties:
+                 status:
+                  type: string
+                  example: error
+    
+    delete:
+       tags:
+        - post
+       summary: delete post by id
+       description: delete post by id
+       operationId: deletePost
+       parameters:
+        - name: id
+          in: path
+          description: 'get post by its id'
+          required: true
+          schema:
+            type: string
+       responses:
+        '201':
+         description: successful
+         content:
+           application/json:
+            schema:
+             $ref: '#/components/schemas/deletePost'
+        '401':
+         description: authentication failed
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+        '404':
+         description: not found 
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+        '500':
+          description: error creating comment
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+  
+  
+  /post/{id}/comment:    
+    post:
+       tags:
+        - post
+       summary: comment a post
+       description: comment a post by id
+       operationId: commentPost
+       parameters:
+        - name: {id/comment}
+          in: path
+          description: 'get post by its id'
+          required: true
+          schema:
+            type: string
+       responses:
+        '201':
+         description: successful
+        '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+        '400':
+         description: bad request
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+        '500':
+          description: error
+          content:
+            application/json:
+              schema:
+               type: object
+               properties:
+                 status:
+                  type: string
+                  example: error
+        
+               
+        
+    
   /post/{id}/like:
     post:
       tags:
@@ -325,6 +460,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     
+
   /cohort:
     post:
       tags:
@@ -332,8 +468,6 @@ paths:
       summary: Create cohort
       description: This can only be done by the logged in user with role TEACHER.
       operationId: createCohort
-      security:
-        - bearerAuth: []
       responses:
         201:
           description: success
@@ -347,20 +481,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+   
 components:
-  securitySchemes:
-      bearerAuth:
-        type: http
-        scheme: bearer
-        bearerFormat: JWT 
   schemas:
     Post:
       type: object
       properties:
-        status:
-          type: string
-        data:
+        post:
           properties:
+
             post:
               properties:
                 id:
@@ -447,21 +576,31 @@ components:
                         type: string
                       profileImageUrl:
                         type: string 
+
     User:
       type: object
       properties:
-        first_name:
+        status:
           type: string
-        last_name:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
-        biography:
-          type: string
-        github_url:
-          type: string
+        data:
+          properties:
+            first_name:
+              type: string
+              example: Nathan
+            last_name:
+              type: string
+              example: James
+            email:
+              type: string
+              example: ngk5@gmail.com
+            password:
+              type: string
+            biography:
+              type: string
+              example: Hello World
+            github_url:
+              type: string
+              example: https://github.com/vherus
     Posts:
       type: object
       properties:
@@ -645,17 +784,25 @@ components:
                  cohort_id:
                   type: integer
                  role:
-                  type: string
+                  type: string 
+                  example: Student
                  first_name:
                   type: string
+                  example: Nathan
                  last_name:
                   type: string
+                  example: James
                  email:
+                  type: string
+                  example: ngk5@gmail.com
+                 password:
                   type: string
                  biography:
                   type: string
+                  example: Hello World
                  github_url:
                   type: string
+                  example: https://github.com/vherus
     login:
       type: object 
       properties:
@@ -663,35 +810,79 @@ components:
           type: string 
         password:
           type: string
-     
+          
     loginRes:
       type: object 
       properties:
         status: 
           type: string
+          example: success
         data:
          properties:
           token:
            type: string
-          user:
+        user:
+         properties:
+            id: 
+             type: integer
+             example: 1
+            cohort_id: 
+             type: integer 
+            role:
+             type: string 
+             example: Student
+            first_name:
+             type: string
+             example: Nathan
+            last_name:
+              type: string
+              example: James
+            email:
+              type: string
+              example: ngk5@gmail.com
+            password:
+              type: string
+            biography:
+              type: string
+              example: Hello World
+            github_url:
+              type: string
+              example: https://github.com/vherus
+    
+    deletePost:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+         properties:
+          deletedPost:
            properties:
-              id: 
-               type: integer
-              cohort_id: 
-               type: integer 
-              role:
-               type: string
-              first_name:
-               type: string
-              last_name:
-                type: string
-              email:
-                type: string
-              biography:
-                type: string
-              github_url:
-                type: string
-
+            id:
+             type: integer
+             example: 3
+            content:
+             type: string
+             example: these students are driving me crazy!
+            userId:
+             type: integer
+             example: 3
+            createdAt:
+             type: string
+             format: date#
+            updatedAt:
+             type: string
+             format: date#
+        deletedComments:
+          properties:
+           count:
+             type: integer
+             example: 1
+  
+        
+        
+          
     Error:
       type: object
       properties:
@@ -700,41 +891,7 @@ components:
         data:
           properties:
             error:
-              type: string
-              
-    Log:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          properties:
-            log:
-              properties:
-                id:
-                  type: integer
-                cohort_id:
-                  type: integer
-                date:
-                  type: string
-                author:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    first_name:
-                      type: string
-                    last_name:
-                      type: string
-                lines:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      content:
-                        type: string
+              type: string            
   requestBodies:
     UserArray:
       description: List of user object
