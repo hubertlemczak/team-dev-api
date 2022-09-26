@@ -1,4 +1,4 @@
-# Team A - API Spec
+# Team Dev Sim - API Spec
 
 ## Getting Started
 
