@@ -290,40 +290,117 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /post/{id}/:
+    patch:
+      tags:
+       - post
+      summary: edit a post 
+      description: edit post by id
+      operationId: editPost
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: 'The id of the post that is being edited.'
+          required: true
+          schema:
+            type: string
+      responses:
+       '201':
+         description: successful
+       '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+       '400':
+         description: bad request
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
     delete:
       tags:
         - post
-      summary: Delete post
-      description: This can only be done by the logged in user.
+      summary: delete post by id
+      description: delete post by id
       operationId: deletePost
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
-          description: 'The id of the post that is being deleted.'
+          description: 'get post by its id'
           required: true
           schema:
             type: string
       responses:
-        201:
-          description: success
+        '201':
+         description: successful
+         content:
+           application/json:
+            schema:
+             $ref: '#/components/schemas/DeletePost'
+        '401':
+         description: authentication failed
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+        '404':
+         description: not found 
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+        '500':
+          description: error creating comment
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+  /post/{id}/comment:    
+    post:
+      tags:
+        - post
+      summary: comment a post
+      description: comment a post by id
+      operationId: commentPost
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: 'get post by its id'
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+         description: successful
+        '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+        '400':
+         description: bad request
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+        '500':
+          description: error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletePost'
-        403:
-          description: fail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: fail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+               type: object
+               properties:
+                 status:
+                  type: string
+                  example: error
     
   /cohort:
     post:
@@ -701,6 +778,36 @@ components:
           properties:
             error:
               type: string
+    deletePost:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+         properties:
+          deletedPost:
+           properties:
+            id:
+             type: integer
+             example: 3
+            content:
+             type: string
+             example: these students are driving me crazy!
+            userId:
+             type: integer
+             example: 3
+            createdAt:
+             type: string
+             format: date#
+            updatedAt:
+             type: string
+             format: date#
+        deletedComments:
+          properties:
+           count:
+             type: integer
+             example: 1
               
     Log:
       type: object
