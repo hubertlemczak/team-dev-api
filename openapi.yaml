@@ -253,7 +253,11 @@ paths:
       summary: gets all posts
       description: get all posts
       operationId: getPosts
-      responses:
+
+      security:
+        - bearerAuth: []
+      responses: 
+
         '200':
           description: Successful operation
           content:
@@ -266,7 +270,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+
+               
                 
   /post/{id}:  
     patch:
@@ -384,8 +389,78 @@ paths:
                
         
     
+  /post/{id}/like:
+    post:
+      tags:
+        - post
+      summary: Like post
+      description: This can only be done by the logged in user.
+      operationId: likePost
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: 'The id of the post that is being liked.'
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LikePost'
+        404:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /post/{id}/:
+    delete:
+      tags:
+        - post
+      summary: Delete post
+      description: This can only be done by the logged in user.
+      operationId: deletePost
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: 'The id of the post that is being deleted.'
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletePost'
+        403:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     
-      
+
   /cohort:
     post:
       tags:
@@ -414,11 +489,94 @@ components:
       properties:
         post:
           properties:
-            id:
-              type: integer
-              format: int64
-            content:
-              type: string
+
+            post:
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                content:
+                  type: string
+    DeletePost:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          properties:
+            deletedPost:
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                content:
+                  type: string
+                userId:
+                  type: integer
+                  format: int64
+                createdAt:
+                  type: string
+                  format: date-time
+                updatedAt:
+                  type: string
+                  format: date-time
+            deletedComments:
+              type: object
+              properties:
+                count:
+                  type: integer
+
+    LikePost:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+                format: int64
+              postId:
+                type: integer
+                format: int64
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+              user:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  id:
+                    type: integer
+                  cohortId:
+                    type: integer
+                  role:
+                    type: string
+                  profile:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      userId:
+                        type: integer
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                      bio:
+                        type: string
+                      githubUrl:
+                        type: string
+                      profileImageUrl:
+                        type: string 
+
     User:
       type: object
       properties:
@@ -449,36 +607,144 @@ components:
         status:
           type: string
         data:
-          properties:
-            posts:
-              type: array
-              items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              content:
+                type: string
+              userId:
+                type: integer
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+              user:
                 type: object
                 properties:
+                  email:
+                    type: string
                   id:
                     type: integer
-                    format: int64
-                  content:
+                  cohortId:
+                    type: integer
+                  role:
                     type: string
-                  author:
+                  profile:
                     type: object
                     properties:
                       id:
                         type: integer
-                      cohortId:
+                      userId:
                         type: integer
                       firstName:
                         type: string
                       lastName:
                         type: string
-                      email:
-                        type: string
                       bio:
                         type: string
                       githubUrl:
                         type: string
-                      role:
+                      profileImageUrl:
                         type: string
+              likes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId:
+                      type: integer
+                      format: int64
+                    postId:
+                      type: integer
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    user:
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                        id:
+                          type: integer
+                        cohortId:
+                          type: integer
+                        role:
+                          type: string
+                        profile:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            userId:
+                              type: integer
+                            firstName:
+                              type: string
+                            lastName:
+                              type: string
+                            bio:
+                              type: string
+                            githubUrl:
+                              type: string
+                            profileImageUrl:
+                              type: string
+              comments:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    content:
+                      type: string
+                    userId:
+                      type: integer
+                      format: int64
+                    postId:
+                      type: integer
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    user:
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                        id:
+                          type: integer
+                        cohortId:
+                          type: integer
+                        role:
+                          type: string
+                        profile:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            userId:
+                              type: integer
+                            firstName:
+                              type: string
+                            lastName:
+                              type: string
+                            bio:
+                              type: string
+                            githubUrl:
+                              type: string
+                            profileImageUrl:
+                              type: string
+                    
     Cohort:
       type: object
       properties:
