@@ -403,6 +403,17 @@ paths:
       operationId: commentPost
       security:
         - bearerAuth: []
+      requestBody:
+            description: Created post object
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                    parentId:
+                      type: integer
       parameters:
         - name: id
           in: path
@@ -411,8 +422,12 @@ paths:
           schema:
             type: string
       responses:
-        '201':
-         description: successful
+        201:
+          description: successful
+          content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Comment'
         '401':
          description: Unuthorized
          content:
@@ -425,17 +440,6 @@ paths:
             application/json:
              schema:
               $ref: '#/components/schemas/Error'
-        '500':
-          description: error
-          content:
-            application/json:
-              schema:
-               type: object
-               properties:
-                 status:
-                  type: string
-                  example: error
-    
   /cohort:
     post:
       tags:
@@ -561,6 +565,62 @@ components:
                             type: string
                           profileImageUrl:
                             type: string 
+    Comment:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          properties:
+            post:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                content:
+                  type: string
+                userId:
+                  type: integer
+                postId:
+                  type: integer
+                parentId:
+                  type: integer
+                createdAt:
+                  type: string
+                  format: date-time
+                updatedAt:
+                  type: string
+                  format: date-time
+                user:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                    id:
+                      type: integer
+                    cohortId:
+                      type: integer
+                    role:
+                      type: string
+                    profile:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        userId:
+                          type: integer
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                        bio:
+                          type: string
+                        githubUrl:
+                          type: string
+                        profileImageUrl:
+                          type: string
     User:
       type: object
       properties:
@@ -719,7 +779,6 @@ components:
                               type: string
                             profileImageUrl:
                               type: string
-                    
     Cohort:
       type: object
       properties:
@@ -815,37 +874,6 @@ components:
           properties:
             error:
               type: string
-    deletePost:
-      type: object
-      properties:
-        status:
-          type: string
-          example: success
-        data:
-         properties:
-          deletedPost:
-           properties:
-            id:
-             type: integer
-             example: 3
-            content:
-             type: string
-             example: these students are driving me crazy!
-            userId:
-             type: integer
-             example: 3
-            createdAt:
-             type: string
-             format: date#
-            updatedAt:
-             type: string
-             format: date#
-        deletedComments:
-          properties:
-           count:
-             type: integer
-             example: 1
-              
     Log:
       type: object
       properties:
