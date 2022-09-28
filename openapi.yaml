@@ -397,7 +397,7 @@ paths:
   /post/{id}/comment:    
     post:
       tags:
-        - post
+        - comment
       summary: Comment a post
       description: comment a post by id
       operationId: commentPost
@@ -444,7 +444,6 @@ paths:
   /post/{postId}/comment/{commentId}:
    delete:
      tags:
-      - post
       - comment
      summary: Delete a comment by id
      description: by a logged in user who owns the post or the comment, or with the role of TEACHER or ADMIN
@@ -478,7 +477,6 @@ paths:
                $ref: '#/components/schemas/Error'
    patch:
      tags:
-      - post
       - comment
      summary: Edit a comment by id
      description: by a logged in user who owns the comment
@@ -527,7 +525,6 @@ paths:
   /post/{postId}/comment/{commentId}/like:
    post:
     tags:
-     - post
      - comment
     summary: Like a comment by id
     description: This can be done by any logged in user.
@@ -582,7 +579,6 @@ paths:
     
    delete:
       tags:
-       - post 
        - comment
       summary: Delete a comment like 
       description: This can be done by a logged in user who liked a particular comment
