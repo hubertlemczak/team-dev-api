@@ -448,7 +448,8 @@ paths:
      summary: Delete a comment by id
      description: by a logged in user who owns the post or the comment, or with the role of TEACHER or ADMIN
      operationId: deleteComment
-     
+     security:
+        - bearerAuth: []
      parameters:
       - name: postId
         description: 'id of the post which has the comment to delete'
@@ -500,6 +501,8 @@ paths:
         in: path
         schema:
          type: integer
+     security:
+        - bearerAuth: []
      responses:
         201:
          description: successful
@@ -529,6 +532,8 @@ paths:
     summary: Like a comment by id
     description: This can be done by any logged in user.
     operationId: likeComment
+    security:
+      - bearerAuth: []
     parameters:
      - name: postId
        in: path
@@ -583,6 +588,8 @@ paths:
       summary: Delete a comment like 
       description: This can be done by a logged in user who liked a particular comment
       operationId: deleteCommentLike
+      security:
+        - bearerAuth: []
       parameters:
        - name: postId
          in: path
