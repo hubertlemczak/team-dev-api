@@ -128,7 +128,7 @@ paths:
     patch:
       tags:
         - user
-      summary: updates cohort
+      summary: Update a cohort
       description: Creates list of users with given input array
       operationId: asd
       security:
@@ -236,7 +236,7 @@ paths:
     get:
       tags:
         - post
-      summary: gets all posts
+      summary: Get all posts
       description: get all posts
       operationId: getPosts
       security:
@@ -258,7 +258,7 @@ paths:
     post:
       tags:
         - post
-      summary: Like post
+      summary: Like a post
       description: This can only be done by the logged in user.
       operationId: likePost
       security:
@@ -292,7 +292,7 @@ paths:
     delete:
       tags:
         - post
-      summary: Delete like
+      summary: Delete a post like
       description: This can only be done by the logged in user.
       operationId: deleteLike
       security:
@@ -327,7 +327,7 @@ paths:
     patch:
       tags:
        - post
-      summary: edit a post 
+      summary: Edit a post 
       description: edit post by id
       operationId: editPost
       security:
@@ -357,7 +357,7 @@ paths:
     delete:
       tags:
         - post
-      summary: delete post by id
+      summary: Delete a post by id
       description: delete post by id
       operationId: deletePost
       security:
@@ -398,7 +398,7 @@ paths:
     post:
       tags:
         - post
-      summary: comment a post
+      summary: Comment a post
       description: comment a post by id
       operationId: commentPost
       security:
@@ -420,7 +420,7 @@ paths:
           description: 'get post by its id'
           required: true
           schema:
-            type: string
+            type: integer
       responses:
         201:
           description: successful
@@ -440,6 +440,203 @@ paths:
             application/json:
              schema:
               $ref: '#/components/schemas/Error'
+              
+  /post/{postId}/comment/{commentId}:
+   delete:
+     tags:
+      - post
+      - comment
+     summary: Delete a comment by id
+     description: by a logged in user who owns the post or the comment, or with the role of TEACHER or ADMIN
+     operationId: deleteComment
+     
+     parameters:
+      - name: postId
+        description: 'id of the post which has the comment to delete'
+        in: path
+        required: true
+        schema:
+          type: integer 
+      - name: commentId
+        description: 'id of the comment to delete'
+        required: true
+        in: path
+        schema:
+         type: integer
+     responses:
+        201:
+         description: successful
+         content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/DeletePost'
+        '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+   patch:
+     tags:
+      - post
+      - comment
+     summary: Edit a comment by id
+     description: by a logged in user who owns the comment
+     operationId: editComment
+     requestBody:
+        description: content to edit
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/editComment'
+     parameters:
+      - name: postId
+        description: 'id of the post which has the comment to delete'
+        in: path
+        required: true
+        schema:
+          type: integer 
+      - name: commentId
+        description: 'id of the comment to delete'
+        required: true
+        in: path
+        schema:
+         type: integer
+     responses:
+        201:
+         description: successful
+         content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/Comment'
+        '400':
+         description: missing content
+         content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Error'
+        '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+      
+      
+              
+  /post/{postId}/comment/{commentId}/like:
+   post:
+    tags:
+     - post
+     - comment
+    summary: Like a comment by id
+    description: This can be done by any logged in user.
+    operationId: likeComment
+    parameters:
+     - name: postId
+       in: path
+       required: true
+       schema:
+         type: integer
+     - name: commentId
+       in: path
+       required: true
+       schema: 
+         type: integer
+    responses:
+      201:
+        description: successful
+        content: 
+          application/json:
+           schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              data:
+               properties:
+                like:
+                 properties:
+                  userId:
+                   type: integer
+                   example: 1
+                  commentId:
+                   type: integer
+                   example: 1
+                  commentLikes:
+                   type: integer
+                   example: 2
+      '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+      '500':
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+               $ref: '#/components/schemas/Error'
+    
+   delete:
+      tags:
+       - post 
+       - comment
+      summary: Delete a comment like 
+      description: This can be done by a logged in user who liked a particular comment
+      operationId: deleteCommentLike
+      parameters:
+       - name: postId
+         in: path
+         required: true
+         schema:
+           type: integer
+       - name: commentId
+         in: path
+         required: true
+         schema: 
+           type: integer
+      responses:
+       201:
+        description: successful
+        content: 
+          application/json:
+           schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              data:
+               properties:
+                like:
+                 properties:
+                  userId:
+                   type: integer
+                   example: 1
+                  commentId:
+                   type: integer
+                   example: 1
+       '401':
+         description: Unuthorized
+         content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+       '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/Error'
+      
+      
+               
+         
+    
+  
   /cohort:
     post:
       tags:
@@ -621,6 +818,13 @@ components:
                           type: string
                         profileImageUrl:
                           type: string
+                          
+    editComment:
+     type: object
+     properties:
+      content: 
+       type: string
+      
     User:
       type: object
       properties:
